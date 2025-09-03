@@ -22,4 +22,4 @@ python3 classroom_fix.py
 3. Select classroom
 4. Select assignment
 
-Script will fix all assignment repositories that have student with pending invitation. 
+Script will resolve repository access issues for selected assignment where students have pending invitations.
