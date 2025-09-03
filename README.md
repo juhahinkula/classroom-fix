@@ -17,7 +17,7 @@ gh auth login
 ```
 2. Run the script
 ```
-python classroom-fix.py
+python3 classroom-fix.py
 ```
 3. Select classroom
 4. Select assignment
