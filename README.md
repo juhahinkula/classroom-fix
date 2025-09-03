@@ -8,13 +8,18 @@ Python script to fix Github Classroom [Repository Access Issue](https://github.c
 ```
 gh extension install github/gh-classroom
 ```
+3. Download `classroom-fix.py` from this repository
 
-## Start to use
+## Usage
 1. Login GH CLI
 ```
 gh auth login
 ```
 2. Run the script
-
 ```
-ptyhon 
+ptyhon classroom-fix.py
+```
+3. Select classroom
+4. Select assignment
+
+Script will fix all assignment repositories that have student with pending invitation. 
