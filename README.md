@@ -8,7 +8,7 @@ Python script to fix Github Classroom [Repository Access Issue](https://github.c
 ```
 gh extension install github/gh-classroom
 ```
-3. Download `classroom-fix.py` from this repository
+3. Download `classroom_fix.py` from this repository
 
 ## Usage
 1. Login GH CLI
@@ -17,7 +17,7 @@ gh auth login
 ```
 2. Run the script
 ```
-python3 classroom-fix.py
+python3 classroom_fix.py
 ```
 3. Select classroom
 4. Select assignment
