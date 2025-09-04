@@ -58,23 +58,29 @@ def parse_accepted_assignments(output):
     return accepted
 
 def has_pending_invitation(org, repo, user):
-    """Check if user has a pending invitation to the repo."""
+    """Check if user has a pending invitation to the repo and return the invitation ID if found."""
     command = f'gh api /repos/{org}/{repo}/invitations'
     try:
         output = run_command(command)
         invitations = json.loads(output)
         for inv in invitations:
             if inv.get('invitee', {}).get('login') == user:
-                return True
-        return False
+                return inv.get('id')
+        return None
     except json.JSONDecodeError:
-        return False
+        return None
     except subprocess.CalledProcessError:
-        return False
+        return None
+
+def delete_invitation(org, repo, invitation_id):
+    """Delete a pending invitation by ID."""
+    command = f'gh api -X DELETE /repos/{org}/{repo}/invitations/{invitation_id} --silent'
+    print(f"Deleting pending invitation for {org}/{repo} (ID: {invitation_id})")
+    run_command(command)
 
 def add_collaborator(org, repo, user):
     """Add user as collaborator to the repo."""
-    command = f'gh api -X PUT /repos/{org}/{repo}/collaborators/{user}'
+    command = f'gh api -X PUT /repos/{org}/{repo}/collaborators/{user} -f permission=write --silent'
     print(f"Adding {user} to {org}/{repo}")
     run_command(command)
 
@@ -147,7 +153,9 @@ def main():
             if len(url_parts) >= 2:
                 org = url_parts[-2]
                 repo = url_parts[-1]
-                if has_pending_invitation(org, repo, user):
+                invitation_id = has_pending_invitation(org, repo, user)
+                if invitation_id:
+                    delete_invitation(org, repo, invitation_id)
                     add_collaborator(org, repo, user)
                 else:
                     print(f"Skipping {user} for {org}/{repo} (no pending invitation)")
@@ -157,3 +165,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
