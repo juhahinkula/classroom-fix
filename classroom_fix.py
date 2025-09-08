@@ -94,14 +94,14 @@ def main():
         return
 
     print("Available classrooms:")
-    for i, (cid, name) in enumerate(classrooms, 1):
+    for i, (cid, name) in enumerate(classrooms, 0):
         print(f"{i}. {name} (ID: {cid})")
 
     # Select classroom
     while True:
         try:
-            choice = int(input("Select a classroom (number): ")) - 1
-            if 0 <= choice < len(classrooms):
+            choice = int(input("Select a classroom (number): "))
+            if 0 < choice <= len(classrooms):
                 selected_classroom = classrooms[choice]
                 break
             else:
@@ -120,48 +120,54 @@ def main():
         print("No assignments found.")
         return
 
-    print("Available assignments:")
-    for i, (aid, title) in enumerate(assignments, 1):
-        print(f"{i}. {title} (ID: {aid})")
-
     # Select assignment
     while True:
-        try:
-            choice = int(input("Select an assignment (number): ")) - 1
-            if 0 <= choice < len(assignments):
-                selected_assignment = assignments[choice]
-                break
-            else:
-                print("Invalid choice.")
-        except ValueError:
-            print("Please enter a number.")
+        while True:
+            print("Available assignments:")
+            for i, (aid, title) in enumerate(assignments, 0):
+                print(f"{i}. {title} (ID: {aid})")
 
-    assignment_id, assignment_title = selected_assignment
-    print(f"Selected: {assignment_title}")
-
-    # Fetch and fix accepted assignments
-    page = 1
-    while True:
-        print(f"Fetching page {page} of accepted assignments...")
-        command = f'gh classroom accepted-assignments -a {assignment_id} --per-page 30 --page {page}'
-        output = run_command(command)
-        accepted = parse_accepted_assignments(output)
-        if not accepted:
-            break
-        for user, url in accepted:
-            url_parts = url.split('/')
-            if len(url_parts) >= 2:
-                org = url_parts[-2]
-                repo = url_parts[-1]
-                invitation_id = has_pending_invitation(org, repo, user)
-                if invitation_id:
-                    delete_invitation(org, repo, invitation_id)
-                    add_collaborator(org, repo, user)
+            try:
+                choice = input("Select an assignment (number) or q to quit: ")
+                if choice == 'q':
+                    exit()
                 else:
-                    print(f"Skipping {user} for {org}/{repo} (no pending invitation)")
-        page += 1
+                    choice = int(choice)
+                    
+                if 0 < choice <= len(assignments):
+                    selected_assignment = assignments[choice]
+                    break
+                else:
+                    print("Invalid choice.")
+            except ValueError:
+                print("Please enter a number or q to quit.")
 
-    print("Done fixing pending invitations.")
+        assignment_id, assignment_title = selected_assignment
+        print(f"Selected: {assignment_title}")
+
+        # Fetch and fix accepted assignments
+        page = 1
+        while True:
+            print(f"Fetching page {page} of accepted assignments...")
+            command = f'gh classroom accepted-assignments -a {assignment_id} --per-page 30 --page {page}'
+            output = run_command(command)
+            accepted = parse_accepted_assignments(output)
+            if not accepted:
+                break
+            for user, url in accepted:
+                url_parts = url.split('/')
+                if len(url_parts) >= 2:
+                    org = url_parts[-2]
+                    repo = url_parts[-1]
+                    invitation_id = has_pending_invitation(org, repo, user)
+                    if invitation_id:
+                        delete_invitation(org, repo, invitation_id)
+                        add_collaborator(org, repo, user)
+                    else:
+                        print(f"Skipping {user} for {org}/{repo} (no pending invitation)")
+            page += 1
+
+        print("Done fixing pending invitations.")
 
 if __name__ == "__main__":
     main()
